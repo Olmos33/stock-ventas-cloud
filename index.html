@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Stock y Ventas</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Control de Stock y Ventas</h1>
+        <div class="header-controls">
+            <button id="btnNuevoProducto">Añadir Producto</button>
+            <button id="btnHistorial">Ver Historial</button>
+            <div class="undo-redo">
+                <button id="btnDeshacer" disabled>↩️ Deshacer</button>
+                <button id="btnRehacer" disabled>↪️ Rehacer</button>
+            </div>
+            <div class="total-money-display">
+                Facturación: <span id="totalDinero">0.00</span>€
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="main-tabs">
+            <button id="tabStock" class="main-tab-button active">Stock General</button>
+            <button id="tabVentasDiarias" class="main-tab-button">Ventas Diarias</button>
+        </div>
+
+        <div id="contentStock" class="tab-content-main active">
+            <section class="products-list">
+                <h2>Stock de Productos</h2>
+                <div class="product-headers">
+                    <span>Tipo/Talla</span>
+                    <span>Inicial</span>
+                    <span>Vendidos</span>
+                    <span>Regalados</span>
+                    <span>Stock Actual</span>
+                    <span>Precio (€)</span>
+                    <span>Acción</span>
+                </div>
+                <div id="productos" class="products-grid">
+                </div>
+                <button id="btnDescargarStock" style="margin-top: 15px; width: 100%; background-color: #3498db;">Descargar Stock (CSV)</button>
+            </section>
+        </div>
+
+        <div id="contentVentasDiarias" class="tab-content-main">
+            <section class="daily-sales">
+                <h2>Ventas Diarias</h2>
+                <div class="venta-header">
+                    <span class="left-align-header">Tipo/Talla</span>
+                    <span>Vendidos</span>
+                    <span>Regalados</span>
+                </div>
+                <div id="ventasDiarias" class="sales-grid">
+                    </div>
+
+                <div class="payment-summary-container">
+                    <div class="change-calculator">
+                        <label for="efectivoRecibido">Efectivo Recibido (€):</label>
+                        <input type="number" id="efectivoRecibido" step="0.01" min="0">
+                        <p>Cambio: <span id="cambioCliente">0.00</span>€</p>
+                    </div>
+                    <div class="payment-method-container">
+                        <button id="btnEfectivo" class="payment-method-btn active">Efectivo</button>
+                        <button id="btnTarjeta" class="payment-method-btn">Tarjeta</button>
+                    </div>
+                    <div class="total-to-pay">
+                        Total a Pagar: <span id="totalAPagar">0.00</span>€
+                    </div>
+                </div>
+                
+                <textarea id="areaAnotaciones" placeholder="Anotaciones adicionales..."></textarea>
+                <button id="btnActualizar">Realizar Venta</button>
+            </section>
+        </div>
+    </main>
+
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="cerrarModal">&times;</span>
+            <h2 id="modalTitle">Añadir Nuevo Producto</h2>
+            <form id="formProducto">
+                <label for="nombreProducto">Tipo de Producto:</label>
+                <input type="text" id="nombreProducto" required>
+                <label for="tallaProducto">Talla:</label>
+                <input type="text" id="tallaProducto" required>
+                <label for="cantidadInicial">Cantidad Inicial:</label>
+                <input type="number" id="cantidadInicial" min="0" required>
+                <label for="precioProducto">Precio por Unidad (€):</label>
+                <input type="number" id="precioProducto" step="0.01" min="0" required>
+                <button type="submit" id="btnGuardarProducto">Guardar Producto</button>
+                <button type="button" id="btnEliminarProductoModal" class="delete-button" style="display: none; margin-top: 10px;">Eliminar Producto</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modalHistorial" class="modal">
+        <div class="modal-content large-modal">
+            <span class="close" id="cerrarModalHistorial">&times;</span>
+            <h2>Historial</h2>
+            <div class="tabs">
+                <button id="tabActualizaciones" class="tab-button active">Ventas</button>
+                <button id="tabDiario" class="tab-button">Historial Diario</button>
+            </div>
+            <div id="contenidoHistorial" class="tab-content">
+                </div>
+            <div id="contenidoHistorialDiario" class="tab-content" style="display: none;">
+                </div>
+        </div>
+    </div>
+
+    <div id="modalAnotacion" class="modal">
+        <div class="modal-content">
+            <span class="close" id="cerrarModalAnotacion">&times;</span>
+            <h2>Anotación</h2>
+            <p id="textoAnotacion"></p>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>

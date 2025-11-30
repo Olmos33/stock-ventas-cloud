@@ -1,0 +1,18 @@
+{
+  "name": "stock-ventas-red-local",
+  "version": "1.0.0",
+  "description": "Servidor para la app Stock y Ventas con acceso en red local",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.16.3",
+    "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

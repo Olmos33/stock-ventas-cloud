@@ -1,0 +1,704 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f6;
+    color: #333;
+    line-height: 1.6;
+}
+
+header {
+    background-color: #2c3e50;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.2em;
+}
+
+.header-controls {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.total-money-display {
+    background-color: #384f67;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-left: 15px;
+    white-space: nowrap;
+}
+
+#totalDinero {
+    color: #a3e635;
+    font-size: 1.2em;
+    margin-left: 5px;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+button:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+main {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.main-tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ccc;
+    background-color: #ecf0f1;
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+}
+
+.main-tab-button {
+    flex-grow: 1;
+    text-align: center;
+    background-color: #eee;
+    color: #333;
+    border: none;
+    padding: 15px 20px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 5px 5px 0 0;
+    transition: background-color 0.2s, color 0.2s;
+    margin: 0 2px;
+}
+
+.main-tab-button:first-child {
+    margin-left: 0;
+}
+
+.main-tab-button:last-child {
+    margin-right: 0;
+}
+
+.main-tab-button.active {
+    background-color: #2c3e50;
+    color: white;
+    border-bottom: 2px solid #2c3e50;
+}
+
+.main-tab-button:hover:not(.active) {
+    background-color: #ddd;
+}
+
+.tab-content-main {
+    display: none;
+    padding: 0px;
+    background-color: #ecf0f1;
+    border-radius: 0 0 8px 8px;
+}
+
+.tab-content-main.active {
+    display: block;
+}
+
+section {
+    margin-bottom: 0px;
+    padding: 20px;
+    background-color: #ecf0f1;
+    border-radius: 8px;
+}
+
+.tab-content-main section {
+    border-radius: 0;
+    padding-top: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+
+h2 {
+    color: #2c3e50;
+    border-bottom: 2px solid #bdc3c7;
+    padding-bottom: 10px;
+    margin-top: 0;
+    font-size: 1.8em;
+}
+
+.products-grid, .sales-grid {
+    display: grid;
+    gap: 15px;
+}
+
+.product-headers {
+    display: grid;
+    grid-template-columns: 2fr repeat(4, 0.8fr) 1fr auto;
+    font-weight: bold;
+    background-color: #bdc3c7;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.product-headers span:first-child {
+    text-align: left !important;
+    padding-left: 10px;
+}
+
+.venta-header {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(2, 1fr);
+    font-weight: bold;
+    background-color: #bdc3c7;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.left-align-header {
+    text-align: left !important;
+    padding-left: 10px;
+}
+
+.product-headers span, .venta-header span {
+    text-align: center;
+    padding: 5px;
+}
+
+/* Espacio para la cuadrícula de productos */
+#productos.products-grid {
+    margin-top: 15px;
+}
+
+.producto, .venta-diaria {
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.producto h3, .venta-diaria h3 {
+    margin-top: 0;
+    color: #34495e;
+    border-bottom: 1px dashed #eee;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.stock-info {
+    display: grid;
+    grid-template-columns: 2fr repeat(4, 0.8fr) 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.stock-info:last-child, .venta-info:last-child {
+    border-bottom: none;
+}
+
+.stock-info strong, .venta-info strong {
+    text-align: left;
+    white-space: nowrap;
+}
+
+.stock-info span, .venta-info span {
+    text-align: center;
+}
+
+/* Estilo para el botón de editar */
+.stock-info button {
+    background-color: #3498db;
+    padding: 5px 8px;
+    font-size: 0.8em;
+}
+
+.stock-info button:hover {
+    background-color: #2980b9;
+}
+
+/* Nuevo estilo para el botón de eliminar dentro del modal */
+.delete-button {
+    background-color: #e74c3c !important;
+    margin-top: 10px;
+    width: 100%;
+}
+
+.delete-button:hover {
+    background-color: #c0392b !important;
+}
+
+
+.daily-sales .sales-grid {
+    grid-template-columns: 1fr;
+}
+
+.venta-info {
+    display: grid;
+    grid-template-columns: 1.5fr repeat(2, 1fr);
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.contador {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+
+.contador button {
+    padding: 5px 10px;
+    font-size: 1.2em;
+    background-color: #95a5a6;
+    color: white;
+    border-radius: 3px;
+}
+
+.contador button:hover {
+    background-color: #7f8c8d;
+}
+
+.contador span {
+    font-size: 1.1em;
+    font-weight: bold;
+    min-width: 25px;
+    text-align: center;
+}
+
+textarea {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-top: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.daily-sales button#btnActualizar {
+    width: 100%;
+    margin-top: 15px;
+    padding: 15px;
+    font-size: 1.2em;
+    background-color: #27ae60;
+}
+
+.daily-sales button#btnActualizar:hover {
+    background-color: #229954;
+}
+
+/* Modal General */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.modal-content.large-modal {
+    max-width: 900px;
+    height: 80vh;
+    overflow-y: auto;
+}
+
+/* padding-right para el h2 dentro del modal */
+.modal-content h2 {
+    padding-right: 180px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+}
+
+.close:hover,
+.close:focus {
+    color: #333;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+form input[type="text"],
+form input[type="number"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+form button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    font-size: 1.1em;
+}
+
+form button[type="submit"]:hover {
+    background-color: #218838;
+}
+
+/* Historial (modal secundario) */
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ccc;
+}
+
+.tab-button {
+    background-color: #eee;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 1em;
+    border-radius: 5px 5px 0 0;
+    transition: background-color 0.2s;
+}
+
+.tab-button.active {
+    background-color: #2c3e50;
+    color: white;
+    border-bottom: 2px solid #2c3e50;
+}
+
+.tab-button:hover:not(.active) {
+    background-color: #ddd;
+}
+
+.historial-entrada {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.historial-entrada strong {
+    color: #34495e;
+}
+
+.historial-entrada ul {
+    list-style: none;
+    padding: 0;
+    margin: 5px 0 0 15px;
+}
+
+.historial-entrada li {
+    margin-bottom: 3px;
+    color: #555;
+}
+
+.historial-anotacion {
+    display: inline-block;
+    background-color: #f39c12;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.historial-anotacion:hover {
+    background-color: #e67e22;
+}
+
+/* Botones Deshacer/Rehacer */
+.undo-redo {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Estilos para el contenedor de los nuevos elementos de pago */
+.payment-summary-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 10px 0;
+    border-top: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Estilos para botones de método de pago */
+.payment-method-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-grow: 1;
+    min-width: 200px;
+}
+
+.payment-method-btn {
+    padding: 10px 20px;
+    border: 2px solid #007bff;
+    background-color: #f8f9fa;
+    color: #007bff;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.payment-method-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.payment-method-btn:hover:not(.active) {
+    background-color: #e2e6ea;
+}
+
+/* Estilos para el campo de efectivo y cambio */
+.change-calculator {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    flex-grow: 1;
+    min-width: 180px;
+}
+
+.change-calculator label {
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 0;
+}
+
+.change-calculator input {
+    width: 100px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+    text-align: right;
+}
+
+.change-calculator p {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+#cambioCliente {
+    color: #e74c3c;
+    font-size: 1.2em;
+    margin-left: 5px;
+}
+
+/* Estilos para el total a pagar */
+.total-to-pay {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    white-space: nowrap;
+    flex-grow: 1;
+    text-align: center;
+    min-width: 120px;
+}
+
+#totalAPagar {
+    font-size: 1.2em;
+    margin-left: 5px;
+}
+
+
+/* Media Queries para responsividad */
+@media (max-width: 768px) {
+    .header-controls {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    h1 {
+        font-size: 1.8em;
+    }
+
+    .main-tabs {
+        flex-direction: column;
+        margin-bottom: 10px;
+    }
+
+    .main-tab-button {
+        border-radius: 5px;
+        margin: 5px 0;
+    }
+    .main-tab-button:first-child, .main-tab-button:last-child {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+
+    .product-headers, .stock-info {
+        grid-template-columns: 2fr auto auto;
+    }
+
+    .product-headers span:nth-child(2),
+    .product-headers span:nth-child(3),
+    .product-headers span:nth-child(4),
+    .product-headers span:nth-child(5) {
+        display: none;
+    }
+
+    .stock-info span:nth-child(1),
+    .stock-info span:nth-child(2),
+    .stock-info span:nth-child(3),
+    .stock-info span:nth-child(4) {
+        display: none;
+    }
+
+    .venta-header, .venta-info {
+        grid-template-columns: 1.5fr repeat(2, 1fr);
+    }
+
+    .total-money-display {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    /* En pantallas más pequeñas, los botones del historial se apilan y vuelven a la posición estática */
+    .historial-actions {
+        position: static; 
+        flex-direction: column; 
+        width: 100%;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        gap: 10px; 
+    }
+    
+    .historial-actions button {
+        width: 100%; 
+        font-size: 1em; 
+        padding: 10px 15px;
+        flex: unset; 
+    }
+
+    .modal-content h2 {
+        padding-right: 0; 
+    }
+
+    /* Ajustes para los nuevos elementos de pago en móvil */
+    .payment-summary-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .change-calculator,
+    .payment-method-container,
+    .total-to-pay {
+        width: 100%;
+        min-width: unset;
+        text-align: center;
+    }
+
+    .change-calculator input {
+        width: calc(100% - 20px);
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    main {
+        padding: 10px;
+        margin: 10px auto;
+    }
+
+    h2 {
+        font-size: 1.5em;
+    }
+
+    button {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 5% auto;
+    }
+}
