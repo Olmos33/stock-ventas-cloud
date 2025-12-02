@@ -35,27 +35,56 @@ const socketToStoreMap = new Map();
  */
 async function loadGlobalState() {
     try {
+        // 1. Intentar cargar el estado de todas las tiendas (incluido el ARCHIVO_CENTRAL)
+        // Asume una tabla 'store_states' con columnas 'id' (TEXT) y 'state_data' (JSONB)
         const res = await db.query("SELECT data FROM config WHERE id = 1");
-        if (res.rows.length > 0) {
-            // Retorna el objeto JSON almacenado en la columna 'data'
-            return res.rows[0].data;
-        } else {
-            // Inicialización si la fila 1 no existe (debe insertarse al crear la tabla)
-            // Se asume que la fila 1 fue creada con: INSERT INTO config (id, data) VALUES (1, '{"ARCHIVO_CENTRAL": { ... }}')
-            console.log("⚠️ Advertencia: No se encontró estado, inicializando por defecto.");
-            return {
+
+        if (res.rows.length === 0) {
+            console.log('⚠️ Base de datos vacía. Inicializando estado global (Archivo Central).');
+            
+            // Estado inicial para el primer arranque (si la DB está vacía)
+            const initialState = {
                 [ARCHIVO_CENTRAL_ID]: {
                     nombre: 'Archivo Central',
-                    estado: {}, // Stock INICIAL y Precio maestro
-                    tiendas: {}, // Resumen de movimientos de cada tienda
+                    estado: {}, // Stock maestro
+                    tiendas: {}, // Resumen de otras tiendas
                     totalDineroGeneral: 0,
                     isCentral: true
                 }
             };
+
+            // 2. Guardar el estado inicial en la DB para la próxima vez
+            const centralData = initialState[ARCHIVO_CENTRAL_ID];
+            await db.query(
+                'INSERT INTO config(id, state_data) VALUES($1, $2)',
+                [ARCHIVO_CENTRAL_ID, centralData]
+            );
+
+            return initialState;
         }
+
+        // 3. Reconstruir el objeto appStates a partir de los resultados de la DB
+        const loadedStates = {};
+        for (const row of res.rows) {
+            // PostgreSQL almacena el JSON, que ya es un objeto, en row.state_data
+            loadedStates[row.id] = row.state_data; 
+        }
+
+        console.log(`✅ Estado global cargado con ${Object.keys(loadedStates).length} tiendas.`);
+        return loadedStates;
+
     } catch (error) {
-        console.error("❌ ERROR cargando el estado de la DB:", error);
-        return { [ARCHIVO_CENTRAL_ID]: { nombre: 'Archivo Central', estado: {}, tiendas: {}, totalDineroGeneral: 0, isCentral: true } };
+        console.error('❌ Error CRÍTICO al cargar el estado global de la DB:', error);
+        // Devolver un estado inicial de contingencia en caso de fallo de conexión/consulta
+        return {
+            [ARCHIVO_CENTRAL_ID]: {
+                nombre: 'Archivo Central (Contingencia)',
+                estado: {},
+                tiendas: {},
+                totalDineroGeneral: 0,
+                isCentral: true
+            }
+        };
     }
 }
 

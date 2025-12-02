@@ -44,6 +44,89 @@ export function renderTotalDinero() {
     totalDineroSpan.textContent = totalDinero.toFixed(2);
 }
 
+export function renderVentasDiarias() {
+    ventasDiv.innerHTML = '';
+    for (const tipo in estado) {
+        const productoDiv = document.createElement('div');
+        productoDiv.className = 'venta-diaria';
+        const titulo = document.createElement('h3');
+        titulo.textContent = tipo;
+        productoDiv.appendChild(titulo);
+        
+        for (const talla in estado[tipo]) {
+            const datosStock = estado[tipo][talla];
+            if (!ventasTemporales[tipo]) ventasTemporales[tipo] = {};
+            if (!ventasTemporales[tipo][talla]) ventasTemporales[tipo][talla] = { vendidos: 0, regalados: 0 };
+
+            const info = document.createElement('div');
+            info.className = 'venta-info';
+            info.innerHTML = `<strong>${talla}</strong>`;
+
+            // Vendidos
+            const contVend = document.createElement('div');
+            contVend.className = 'contador';
+            const menosV = document.createElement('button');
+            menosV.textContent = '-';
+            menosV.onclick = () => {
+                if ((datosStock.vendidos + ventasTemporales[tipo][talla].vendidos) > 0) {
+                    ventasTemporales[tipo][talla].vendidos--;
+                    renderVentasDiarias();
+                } else if (ventasTemporales[tipo][talla].vendidos > 0) {
+                    ventasTemporales[tipo][talla].vendidos--;
+                    renderVentasDiarias();
+                }
+            };
+            const masV = document.createElement('button');
+            masV.textContent = '+';
+            masV.onclick = () => {
+                const stockEfectivo = datosStock.stock - (ventasTemporales[tipo][talla].vendidos + ventasTemporales[tipo][talla].regalados);
+
+                if (stockEfectivo > 0 || ventasTemporales[tipo][talla].vendidos < 0) {
+                    ventasTemporales[tipo][talla].vendidos++;
+                    renderVentasDiarias();
+                }
+            };
+            const valV = document.createElement('span');
+            valV.textContent = ventasTemporales[tipo][talla].vendidos;
+            contVend.append(menosV, valV, masV);
+
+            // Regalados
+            const contReg = document.createElement('div');
+            contReg.className = 'contador';
+            const menosR = document.createElement('button');
+            menosR.textContent = '-';
+            menosR.onclick = () => {
+                if ((datosStock.regalados + ventasTemporales[tipo][talla].regalados) > 0) {
+                    ventasTemporales[tipo][talla].regalados--;
+                    renderVentasDiarias();
+                } else if (ventasTemporales[tipo][talla].regalados > 0) {
+                    ventasTemporales[tipo][talla].regalados--;
+                    renderVentasDiarias();
+                }
+            };
+            const masR = document.createElement('button');
+            masR.textContent = '+';
+            masR.onclick = () => {
+                const stockEfectivo = datosStock.stock - (ventasTemporales[tipo][talla].vendidos + ventasTemporales[tipo][talla].regalados);
+                
+                if (stockEfectivo > 0 || ventasTemporales[tipo][talla].regalados < 0) {
+                    ventasTemporales[tipo][talla].regalados++;
+                    renderVentasDiarias();
+                }
+            };
+            const valR = document.createElement('span');
+            valR.textContent = ventasTemporales[tipo][talla].regalados;
+            contReg.append(menosR, valR, masR);
+
+            info.append(contVend, contReg);
+            productoDiv.appendChild(info);
+        }
+        ventasDiv.appendChild(productoDiv);
+    }
+    calcularTotalPagar();
+    calcularCambio();
+}
+
 export function updateUndoRedoButtons() {
     btnDeshacer.disabled = historyPointer <= 0;
     btnRehacer.disabled = historyPointer === history.length - 1;

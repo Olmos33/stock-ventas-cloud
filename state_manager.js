@@ -9,6 +9,7 @@ import {
     renderProductos, renderVentasDiarias, loadStateFromHistory 
 } from './sales_view.js';
 
+import { renderProductos } from './stock_view.js';
 
 // --- VARIABLES GLOBALES DE ESTADO (EXPORTADAS) ---
 export let estado = {}; 
