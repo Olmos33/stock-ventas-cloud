@@ -3,7 +3,7 @@
 import { socket, loadStateFromGlobal } from './state_manager.js';
 import { renderProductos } from './stock_view.js';
 import { mostrarPestanaPrincipal } from './sales_view.js';
-import { initDOM } from './init_dom.js'; 
+import { initDOM } from './ui_init.js'; 
 
 // --- INICIALIZACIÓN DEL DOM ---
 document.addEventListener('DOMContentLoaded', () => {

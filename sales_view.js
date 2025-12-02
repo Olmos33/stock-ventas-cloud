@@ -301,6 +301,30 @@ export function loadStateFromHistory(loadedState) {
     calcularCambio();
 }
 
+export function mostrarPestana(pestana) {
+    // Referencias DOM (asumimos que ya han sido asignadas en ui_init.js)
+    const tabActualizaciones = document.getElementById('tabActualizaciones');
+    const tabDiario = document.getElementById('tabDiario');
+    const contenidoHistorial = document.getElementById('contenidoHistorial');
+    const contenidoHistorialDiario = document.getElementById('contenidoHistorialDiario');
+
+    if (pestana === 'actualizaciones') {
+        // Activar pestaña 'Ventas'
+        tabActualizaciones.classList.add('active');
+        tabDiario.classList.remove('active');
+        contenidoHistorial.style.display = 'block';
+        contenidoHistorialDiario.style.display = 'none';
+        renderHistorial(); // Renderiza el historial de transacciones individuales
+    } else if (pestana === 'diario') {
+        // Activar pestaña 'Historial Diario'
+        tabDiario.classList.add('active');
+        tabActualizaciones.classList.remove('active');
+        contenidoHistorial.style.display = 'none';
+        contenidoHistorialDiario.style.display = 'block';
+        renderHistorialDiario(); // Renderiza el resumen de ventas por día
+    }
+}
+
 export function mostrarPestanaPrincipal(pestana) {
     document.querySelectorAll('.main-tab-button').forEach(button => button.classList.remove('active'));
     document.querySelectorAll('.tab-content-main').forEach(content => content.classList.remove('active'));
