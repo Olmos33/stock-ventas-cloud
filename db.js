@@ -1,26 +1,23 @@
-// db.js (MODIFICADO para asegurar que lee DATABASE_URL)
+// db.js (MODIFICADO para forzar SSL)
 
 const { Pool } = require('pg');
 
-// Railway inyecta la variable de entorno DATABASE_URL (privada)
 const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
-    // Esto solo debería pasar si la variable no se inyecta en el servicio
     console.error("❌ ERROR CRÍTICO: DATABASE_URL no encontrada en el entorno.");
 }
 
-// Pasamos la cadena de conexión completa al constructor del Pool.
-// Esto sobrescribe la búsqueda de variables separadas (PGHOST, etc.).
+// Pasamos la cadena de conexión completa + configuración SSL requerida por Railway
 const pool = new Pool({
     connectionString: connectionString,
-    // CRÍTICO: Las conexiones Cloud a menudo requieren SSL
+    // [CRÍTICO]: Este objeto es necesario para las conexiones cifradas en la nube.
     ssl: { 
         rejectUnauthorized: false 
     }
 });
 
-console.log("Módulo de conexión a PostgreSQL listo.");
+console.log("Módulo de conexión a PostgreSQL listo con SSL forzado.");
 
 module.exports = {
   query: (text, params) => pool.query(text, params),
