@@ -1,13 +1,15 @@
 // state_manager.js
 // Contiene el estado centralizado, la conexión Socket.IO y la lógica de carga/guardado.
 
-// --- IMPORTACIONES DE MÓDULOS DE VISTA ---
-// Estas funciones se importan para que el state_manager pueda forzar la actualización de la UI
+// --- IMPORTACIONES DE MÓDULOS DE VISTA (Funciones de sales_view y stock_view) ---
 import { 
     renderTotalDinero, updateUndoRedoButtons, updatePaymentMethodButtons, 
     calcularTotalPagar, calcularCambio, mostrarAlertaStock, 
-    renderProductos, renderVentasDiarias, loadStateFromHistory 
-} from './sales_view.js';
+    renderVentasDiarias, loadStateFromHistory, mostrarPestanaPrincipal, 
+    renderHistorial, renderHistorialDiario, mostrarPestana
+} from './sales_view.js'; 
+
+import { renderProductos } from './stock_view.js'; // Importación correcta
 
 // --- VARIABLES GLOBALES DE ESTADO (EXPORTADAS) ---
 export let estado = {}; 
@@ -25,7 +27,7 @@ export const socket = io();
 // --- FUNCIONES CORE DE SINCRONIZACIÓN (EXPORTADAS) ---
 
 export function saveStateAndBroadcast() {
-    // 1. Prepara el objeto para la DB (quita ventasTemporales que es local)
+    // Prepara el objeto para la DB (quita ventasTemporales que es local)
     const stateToSave = {
         estado: estado,
         totalDinero: totalDinero,
@@ -33,15 +35,14 @@ export function saveStateAndBroadcast() {
         historialDiario: historialDiario,
         metodoPagoActivo: metodoPagoActivo,
     };
-    // 2. Envía la actualización al servidor (que luego guardará en PostgreSQL)
     socket.emit('state:update', stateToSave);
 }
 
 // FUNCIÓN CENTRAL: Carga el estado del servidor (loadStateFromGlobal)
 export function loadStateFromGlobal(loadedState, isInit = false) { 
-    stockChangedAlert = []; // Re-inicializar la alerta al cargar un nuevo estado
+    stockChangedAlert = [];
 
-    // 1. Pre-chequeo de Stock (Lógica original para evitar conflictos de venta)
+    // 1. Pre-chequeo de Stock
     if (!isInit) {
         for (const tipo in ventasTemporales) {
             for (const talla in ventasTemporales[tipo]) {
@@ -71,7 +72,7 @@ export function loadStateFromGlobal(loadedState, isInit = false) {
         metodoPagoActivo = loadedState.metodoPagoActivo || 'efectivo';
     }
 
-    // 3. Renderizar y actualizar UI (Llama a funciones exportadas desde sales_view)
+    // 3. Renderizar y actualizar UI (Llama a funciones exportadas)
     renderTotalDinero();
     updateUndoRedoButtons();
     updatePaymentMethodButtons();

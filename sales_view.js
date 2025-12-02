@@ -1,5 +1,3 @@
-// sales_view.js
-// Contiene la lógica de Ventas, Historial, cálculos, y renderizado general de la UI.
 
 // --- IMPORTACIONES DE ESTADO Y CORE ---
 import { 
@@ -7,44 +5,82 @@ import {
     metodoPagoActivo, history, historyPointer, stockChangedAlert, saveStateAndBroadcast, 
     saveStateToHistory, editingProduct 
 } from './state_manager.js';
-import { renderProductos, eliminarProducto, editarProducto } from './stock_view.js';
+
+import { renderProductos } from './stock_view.js'; // Importamos la función de stock (correcta)
 
 
-// --- REFERENCIAS DOM (Para Event Listeners y manipulación) ---
-const totalDineroSpan = document.getElementById('totalDinero');
-const btnDeshacer = document.getElementById('btnDeshacer');
-const btnRehacer = document.getElementById('btnRehacer');
-const totalAPagarSpan = document.getElementById('totalAPagar');
-const efectivoRecibidoInput = document.getElementById('efectivoRecibido');
-const cambioClienteSpan = document.getElementById('cambioCliente');
-const areaAnotaciones = document.getElementById('areaAnotaciones');
-const ventasDiv = document.getElementById('ventasDiarias');
-const btnEfectivo = document.getElementById('btnEfectivo');
-const btnTarjeta = document.getElementById('btnTarjeta');
-const tabStock = document.getElementById('tabStock');
-const tabVentasDiarias = document.getElementById('tabVentasDiarias');
-const contentStock = document.getElementById('contentStock');
-const contentVentasDiarias = document.getElementById('contentVentasDiarias');
-const tabActualizaciones = document.getElementById('tabActualizaciones');
-const tabDiario = document.getElementById('tabDiario');
-const contenidoHistorial = document.getElementById('contenidoHistorial');
-const contenidoHistorialDiario = document.getElementById('contenidoHistorialDiario');
-const modalHistorial = document.getElementById('modalHistorial');
-const modalAnotacion = document.getElementById('modalAnotacion');
-const textoAnotacion = document.getElementById('textoAnotacion');
-const btnActualizar = document.getElementById('btnActualizar');
-const btnHistorial = document.getElementById('btnHistorial');
-const cerrarModalHistorial = document.getElementById('cerrarModalHistorial');
-const cerrarModalAnotacion = document.getElementById('cerrarModalAnotacion');
-const btnDescargarStock = document.getElementById('btnDescargarStock');
-
-// --- FUNCIONES DE RENDERIZADO GENERAL (EXPORTADAS) ---
+// --- FUNCIONES CORE DE UI/RENDERIZADO (EXPORTADAS) ---
 
 export function renderTotalDinero() {
-    totalDineroSpan.textContent = totalDinero.toFixed(2);
+    document.getElementById('totalDinero').textContent = totalDinero.toFixed(2);
 }
 
+export function updateUndoRedoButtons() {
+    document.getElementById('btnDeshacer').disabled = historyPointer <= 0;
+    document.getElementById('btnRehacer').disabled = historyPointer === history.length - 1;
+}
+
+export function updatePaymentMethodButtons() {
+    const btnEfectivo = document.getElementById('btnEfectivo');
+    const btnTarjeta = document.getElementById('btnTarjeta');
+    if (btnEfectivo && btnTarjeta) {
+        if (metodoPagoActivo === 'efectivo') {
+            btnEfectivo.classList.add('active');
+            btnTarjeta.classList.remove('active');
+        } else {
+            btnEfectivo.classList.remove('active');
+            btnTarjeta.classList.add('active');
+        }
+    }
+}
+
+// --- LÓGICA DE CÁLCULO Y VENTA ---
+
+export function calcularTotalPagar() {
+    const totalAPagarSpan = document.getElementById('totalAPagar');
+    let total = 0;
+    for (const tipo in ventasTemporales) {
+        for (const talla in ventasTemporales[tipo]) {
+            const cantidadVendida = ventasTemporales[tipo][talla].vendidos;
+            if (estado[tipo]?.[talla]) {
+                total += cantidadVendida * estado[tipo][talla].precio;
+            }
+        }
+    }
+    totalAPagarSpan.textContent = total.toFixed(2);
+    return total; // Retorna el total para calcularCambio
+}
+
+export function calcularCambio() {
+    const totalAPagarSpan = document.getElementById('totalAPagar');
+    const efectivoRecibidoInput = document.getElementById('efectivoRecibido');
+    const cambioClienteSpan = document.getElementById('cambioCliente');
+
+    const totalPagar = parseFloat(totalAPagarSpan.textContent);
+    const efectivoRecibido = parseFloat(efectivoRecibidoInput.value) || 0; 
+    const cambio = efectivoRecibido - totalPagar;
+
+    cambioClienteSpan.textContent = cambio.toFixed(2);
+    cambioClienteSpan.style.color = cambio < 0 ? '#e74c3c' : '#28a745';
+}
+
+export function setMetodoPago(metodo) {
+    metodoPagoActivo = metodo;
+    updatePaymentMethodButtons();
+}
+
+function guardar() {
+    // Alias usado por el código antiguo que ahora llama al core de sincronización
+    saveStateAndBroadcast();
+}
+
+// --- FUNCIÓN CENTRAL DE RENDERIZADO DE VENTAS ---
+
 export function renderVentasDiarias() {
+    const ventasDiv = document.getElementById('ventasDiarias');
+    const totalAPagarSpan = document.getElementById('totalAPagar');
+    const cambioClienteSpan = document.getElementById('cambioCliente');
+    
     ventasDiv.innerHTML = '';
     for (const tipo in estado) {
         const productoDiv = document.createElement('div');
@@ -62,7 +98,7 @@ export function renderVentasDiarias() {
             info.className = 'venta-info';
             info.innerHTML = `<strong>${talla}</strong>`;
 
-            // Vendidos
+            // Vendidos (Contadores)
             const contVend = document.createElement('div');
             contVend.className = 'contador';
             const menosV = document.createElement('button');
@@ -90,7 +126,7 @@ export function renderVentasDiarias() {
             valV.textContent = ventasTemporales[tipo][talla].vendidos;
             contVend.append(menosV, valV, masV);
 
-            // Regalados
+            // Regalados (Contadores)
             const contReg = document.createElement('div');
             contReg.className = 'contador';
             const menosR = document.createElement('button');
@@ -127,64 +163,107 @@ export function renderVentasDiarias() {
     calcularCambio();
 }
 
-export function updateUndoRedoButtons() {
-    btnDeshacer.disabled = historyPointer <= 0;
-    btnRehacer.disabled = historyPointer === history.length - 1;
-}
 
-export function updatePaymentMethodButtons() {
-    if (btnEfectivo && btnTarjeta) {
-        if (metodoPagoActivo === 'efectivo') {
-            btnEfectivo.classList.add('active');
-            btnTarjeta.classList.remove('active');
-        } else {
-            btnEfectivo.classList.remove('active');
-            btnTarjeta.classList.add('active');
-        }
+// --- LÓGICA DE ACTUALIZACIÓN DE VENTAS (btnActualizar.onclick) ---
+// La lógica se envuelve en una función para que pueda ser llamada por ui_init.js
+export function handleUpdateClick() {
+    const areaAnotaciones = document.getElementById('areaAnotaciones');
+    const efectivoRecibidoInput = document.getElementById('efectivoRecibido');
+
+    const updateEntry = {
+        timestamp: new Date().toLocaleString('es-ES'),
+        ventas: {},
+        devoluciones: {},
+        regalos: {},
+        anotacion: areaAnotaciones.value.trim(),
+        metodoPago: '', 
+        montoTotal: 0 
+    };
+
+    const fechaActual = new Date().toLocaleDateString('es-ES');
+    if (!historialDiario[fechaActual]) {
+        historialDiario[fechaActual] = { ventas: {}, regalos: {}, totalDinero: 0, totalEfectivo: 0, totalTarjeta: 0 };
+    } else {
+        historialDiario[fechaActual].totalEfectivo = historialDiario[fechaActual].totalEfectivo || 0;
+        historialDiario[fechaActual].totalTarjeta = historialDiario[fechaActual].totalTarjeta || 0;
     }
-}
 
-// --- FUNCIONES DE CÁLCULO ---
+    let salesMade = false;
+    let moneyChange = 0;
 
-export function calcularTotalPagar() {
-    let total = 0;
     for (const tipo in ventasTemporales) {
         for (const talla in ventasTemporales[tipo]) {
-            const cantidadVendida = ventasTemporales[tipo][talla].vendidos;
+            const cantidadNeta = ventasTemporales[tipo][talla]?.vendidos || 0;
+            const regalados = ventasTemporales[tipo][talla]?.regalados || 0;
+
             if (estado[tipo]?.[talla]) {
-                total += cantidadVendida * estado[tipo][talla].precio;
+                if (cantidadNeta !== 0 || regalados !== 0) {  
+                    salesMade = true;
+
+                    estado[tipo][talla].stock -= (cantidadNeta + regalados);
+                    estado[tipo][talla].vendidos += cantidadNeta;
+                    estado[tipo][talla].regalados += regalados; 
+
+                    const dineroGenerado = (cantidadNeta * estado[tipo][talla].precio);
+                    totalDinero += dineroGenerado;
+                    moneyChange += dineroGenerado;
+
+                    if (cantidadNeta > 0) {
+                        if (!updateEntry.ventas[tipo]) updateEntry.ventas[tipo] = {};
+                        updateEntry.ventas[tipo][talla] = cantidadNeta;
+                    } else if (cantidadNeta < 0) {
+                        if (!updateEntry.devoluciones[tipo]) updateEntry.devoluciones[tipo] = {};
+                        updateEntry.devoluciones[tipo][talla] = Math.abs(cantidadNeta);
+                    }
+                    
+                    if (regalados !== 0) {
+                        if (!updateEntry.regalos[tipo]) updateEntry.regalos[tipo] = {};
+                        updateEntry.regalos[tipo][talla] = regalados;
+                    }
+
+                    if (!historialDiario[fechaActual].ventas[tipo]) historialDiario[fechaActual].ventas[tipo] = {};
+                    historialDiario[fechaActual].ventas[tipo][talla] = (historialDiario[fechaActual].ventas[tipo][talla] || 0) + cantidadNeta;
+
+                    if (!historialDiario[fechaActual].regalos[tipo]) historialDiario[fechaActual].regalos[tipo] = {};
+                    historialDiario[fechaActual].regalos[tipo][talla] = (historialDiario[fechaActual].regalos[tipo][talla] || 0) + regalados;
+                }
             }
         }
     }
-    totalAPagarSpan.textContent = total.toFixed(2);
-}
-
-export function calcularCambio() {
-    const totalPagar = parseFloat(totalAPagarSpan.textContent);
-    const efectivoRecibido = parseFloat(efectivoRecibidoInput.value) || 0; 
-    const cambio = efectivoRecibido - totalPagar;
-    cambioClienteSpan.textContent = cambio.toFixed(2);
-    cambioClienteSpan.style.color = cambio < 0 ? '#e74c3c' : '#28a745';
-}
-
-// --- FUNCIONES DE VISTA Y HISTORY ---
-
-export function mostrarPestanaPrincipal(pestana) {
-    document.querySelectorAll('.main-tab-button').forEach(button => button.classList.remove('active'));
-    document.querySelectorAll('.tab-content-main').forEach(content => content.classList.remove('active'));
-
-    if (pestana === 'stock') {
-        tabStock.classList.add('active');
-        contentStock.classList.add('active');
-        renderProductos(); 
-    } else if (pestana === 'ventas') {
-        tabVentasDiarias.classList.add('active');
-        contentVentasDiarias.classList.add('active');
-        renderVentasDiarias(); 
+    
+    if (salesMade || updateEntry.anotacion) {
+        if (salesMade) {
+            historialDiario[fechaActual].totalDinero += moneyChange;
+            if (metodoPagoActivo === 'efectivo') {
+                historialDiario[fechaActual].totalEfectivo += moneyChange;
+            } else if (metodoPagoActivo === 'tarjeta') {
+                historialDiario[fechaActual].totalTarjeta += moneyChange;
+            }
+            updateEntry.metodoPago = metodoPagoActivo;
+            updateEntry.montoTotal = moneyChange;
+        }
+        historialActualizaciones.unshift(updateEntry);
+        saveStateToHistory(); 
     }
-}
+    
+    ventasTemporales = {};
+    areaAnotaciones.value = '';
+    efectivoRecibidoInput.value = '';
+    calcularCambio();
+    guardar(); // Usa la función guardar que hace socket.emit
+    
+    renderProductos();
+    renderVentasDiarias();
+    renderTotalDinero();
+};
+
+
+// --- FUNCIONES DE HISTORIAL Y UTILIDAD ---
 
 export function loadStateFromHistory(loadedState) {
+    const areaAnotaciones = document.getElementById('areaAnotaciones');
+    const efectivoRecibidoInput = document.getElementById('efectivoRecibido');
+
     // Modificamos las variables de estado importadas
     estado = JSON.parse(JSON.stringify(loadedState.estado || {}));
     totalDinero = loadedState.totalDinero || 0;
@@ -202,6 +281,12 @@ export function loadStateFromHistory(loadedState) {
     updateUndoRedoButtons();
     updatePaymentMethodButtons();
     
+    // (Renderizado de pestañas activas)
+    const contentStock = document.getElementById('contentStock');
+    const contentVentasDiarias = document.getElementById('contentVentasDiarias');
+    const modalHistorial = document.getElementById('modalHistorial');
+    const tabActualizaciones = document.getElementById('tabActualizaciones');
+
     if (contentStock.classList.contains('active')) {
         renderProductos();
     } else if (contentVentasDiarias.classList.contains('active')) {
@@ -216,20 +301,19 @@ export function loadStateFromHistory(loadedState) {
     calcularCambio();
 }
 
-export function mostrarAlertaStock(alertas) {
-    let mensaje = "⚠️ ALERTA DE STOCK ⚠️\n\nLos siguientes productos han sido modificados por otro dispositivo y el stock se ha ajustado:\n\n";
-    alertas.forEach(a => {
-        let linea = `- ${a.tipo} (${a.talla}): `;
-        if (a.nuevoStock === 0) {
-            linea += `¡STOCK AGOTADO! (Era ${a.stockAnterior}). Tu venta temporal se ha cancelado.`;
-        } else if (a.nuevoStock < a.stockAnterior) {
-            linea += `Stock ha bajado de ${a.stockAnterior} a ${a.nuevoStock}. Tu venta se ha ajustado a ${a.nuevoStock}.`;
-        } else {
-            linea += `Stock actualizado a ${a.nuevoStock}.`;
-        }
-        mensaje += linea + '\n';
-    });
-    alert(mensaje);
+export function mostrarPestanaPrincipal(pestana) {
+    document.querySelectorAll('.main-tab-button').forEach(button => button.classList.remove('active'));
+    document.querySelectorAll('.tab-content-main').forEach(content => content.classList.remove('active'));
+
+    if (pestana === 'stock') {
+        tabStock.classList.add('active');
+        contentStock.classList.add('active');
+        renderProductos(); 
+    } else if (pestana === 'ventas') {
+        tabVentasDiarias.classList.add('active');
+        contentVentasDiarias.classList.add('active');
+        renderVentasDiarias(); 
+    }
 }
 
 export function renderHistorial() {
@@ -359,20 +443,20 @@ export function renderHistorialDiario() {
   });
 }
 
-export function mostrarPestana(pestana) {
-  if (pestana === 'actualizaciones') { // Internamente sigue siendo 'actualizaciones' para la lógica
-    tabActualizaciones.classList.add('active');
-    tabDiario.classList.remove('active');
-    contenidoHistorial.style.display = 'block';
-    contenidoHistorialDiario.style.display = 'none';
-    renderHistorial();
-  } else if (pestana === 'diario') {
-    tabDiario.classList.add('active');
-    tabActualizaciones.classList.remove('active');
-    contenidoHistorial.style.display = 'none';
-    contenidoHistorialDiario.style.display = 'block';
-    renderHistorialDiario();
-  }
+export function mostrarAlertaStock(alertas) {
+    let mensaje = "⚠️ ALERTA DE STOCK ⚠️\n\nLos siguientes productos han sido modificados por otro dispositivo y el stock se ha ajustado:\n\n";
+    alertas.forEach(a => {
+        let linea = `- ${a.tipo} (${a.talla}): `;
+        if (a.nuevoStock === 0) {
+            linea += `¡STOCK AGOTADO! (Era ${a.stockAnterior}). Tu venta temporal se ha cancelado.`;
+        } else if (a.nuevoStock < a.stockAnterior) {
+            linea += `Stock ha bajado de ${a.stockAnterior} a ${a.nuevoStock}. Tu venta se ha ajustado a ${a.nuevoStock}.`;
+        } else {
+            linea += `Stock actualizado a ${a.nuevoStock}.`;
+        }
+        mensaje += linea + '\n';
+    });
+    alert(mensaje);
 }
 
 export function descargarStockCSV() {
@@ -413,146 +497,3 @@ export function descargarStockCSV() {
     link.click();
     document.body.removeChild(link); 
 }
-
-// Función para setear el método de pago (necesaria para los Event Listeners de btnEfectivo/btnTarjeta)
-export function setMetodoPago(metodo) {
-    metodoPagoActivo = metodo;
-    updatePaymentMethodButtons();
-}
-
-// Función para guardar (es un alias de saveStateAndBroadcast que se usa en el código viejo)
-function guardar() {
-    saveStateAndBroadcast();
-}
-
-// --- EVENT LISTENERS (Se ejecutan al cargar el módulo) ---
-
-btnActualizar.onclick = () => {
-  const updateEntry = {
-    timestamp: new Date().toLocaleString('es-ES'),
-    ventas: {},
-    devoluciones: {},
-    regalos: {},
-    anotacion: areaAnotaciones.value.trim(),
-    metodoPago: '', 
-    montoTotal: 0 
-  };
-
-  const fechaActual = new Date().toLocaleDateString('es-ES');
-  // Asegurarse de que el objeto del día existe y tiene las propiedades de método de pago
-  if (!historialDiario[fechaActual]) {
-    historialDiario[fechaActual] = { ventas: {}, regalos: {}, totalDinero: 0, totalEfectivo: 0, totalTarjeta: 0 };
-  } else {
-      // Asegurarse de que las propiedades de método de pago existen si el día ya existía (para compatibilidad con datos antiguos)
-      historialDiario[fechaActual].totalEfectivo = historialDiario[fechaActual].totalEfectivo || 0;
-      historialDiario[fechaActual].totalTarjeta = historialDiario[fechaActual].totalTarjeta || 0;
-  }
-
-  let salesMade = false;
-  let moneyChange = 0;
-
-  for (const tipo in ventasTemporales) {
-    for (const talla in ventasTemporales[tipo]) {
-      const cantidadNeta = ventasTemporales[tipo][talla]?.vendidos || 0;
-      const regalados = ventasTemporales[tipo][talla]?.regalados || 0;
-
-      if (estado[tipo]?.[talla]) {
-        if (cantidadNeta !== 0 || regalados !== 0) { 
-          salesMade = true;
-
-          estado[tipo][talla].stock -= (cantidadNeta + regalados);
-          
-          estado[tipo][talla].vendidos += cantidadNeta;
-          estado[tipo][talla].regalados += regalados; 
-
-          const dineroGenerado = (cantidadNeta * estado[tipo][talla].precio);
-          totalDinero += dineroGenerado;
-          moneyChange += dineroGenerado;
-
-          if (cantidadNeta > 0) {
-            if (!updateEntry.ventas[tipo]) updateEntry.ventas[tipo] = {};
-            updateEntry.ventas[tipo][talla] = cantidadNeta;
-          } else if (cantidadNeta < 0) {
-            if (!updateEntry.devoluciones[tipo]) updateEntry.devoluciones[tipo] = {};
-            updateEntry.devoluciones[tipo][talla] = Math.abs(cantidadNeta);
-          }
-          
-          if (regalados !== 0) {
-            if (!updateEntry.regalos[tipo]) updateEntry.regalos[tipo] = {};
-            updateEntry.regalos[tipo][talla] = regalados;
-          }
-
-          if (!historialDiario[fechaActual].ventas[tipo]) historialDiario[fechaActual].ventas[tipo] = {};
-          historialDiario[fechaActual].ventas[tipo][talla] = (historialDiario[fechaActual].ventas[tipo][talla] || 0) + cantidadNeta;
-
-          if (!historialDiario[fechaActual].regalos[tipo]) historialDiario[fechaActual].regalos[tipo] = {};
-          historialDiario[fechaActual].regalos[tipo][talla] = (historialDiario[fechaActual].regalos[tipo][talla] || 0) + regalados;
-        }
-      }
-    }
-  }
-  
-  if (salesMade || updateEntry.anotacion) {
-      if (salesMade) {
-        historialDiario[fechaActual].totalDinero += moneyChange;
-        // Registrar dinero por método de pago
-        if (metodoPagoActivo === 'efectivo') {
-            historialDiario[fechaActual].totalEfectivo += moneyChange;
-        } else if (metodoPagoActivo === 'tarjeta') {
-            historialDiario[fechaActual].totalTarjeta += moneyChange;
-        }
-        updateEntry.metodoPago = metodoPagoActivo;
-        updateEntry.montoTotal = moneyChange;
-      }
-      historialActualizaciones.unshift(updateEntry);
-      saveStateToHistory(); 
-  }
-  
-  ventasTemporales = {};
-  areaAnotaciones.value = '';
-  efectivoRecibidoInput.value = ''; // Limpiar campo de efectivo
-  calcularCambio(); // Recalcular cambio a 0.00
-  guardar(); // Usa la nueva función guardar que hace socket.emit
-  // Al actualizar, queremos que ambas pestañas se refresquen si están activas o si se cambia a ellas
-  renderProductos();
-  renderVentasDiarias();
-  renderTotalDinero();
-};
-
-btnDeshacer.onclick = () => {
-    if (historyPointer > 0) {
-        historyPointer--;
-        const loadedState = history[historyPointer];
-        loadStateFromHistory(loadedState); 
-        saveStateAndBroadcast(); // Notificar al servidor el estado deshecho
-    }
-};
-
-btnRehacer.onclick = () => {
-    if (historyPointer < history.length - 1) {
-        historyPointer++;
-        const loadedState = history[historyPointer];
-        loadStateFromHistory(loadedState);
-        saveStateAndBroadcast(); // Notificar al servidor el estado rehecho
-    }
-};
-
-efectivoRecibidoInput.oninput = calcularCambio;
-
-btnEfectivo.onclick = () => setMetodoPago('efectivo');
-btnTarjeta.onclick = () => setMetodoPago('tarjeta');
-
-tabStock.onclick = () => mostrarPestanaPrincipal('stock');
-tabVentasDiarias.onclick = () => mostrarPestanaPrincipal('ventas');
-
-btnHistorial.onclick = () => {
-  mostrarPestana('actualizaciones'); // La función sigue llamándose 'actualizaciones' internamente
-  modalHistorial.style.display = 'block';
-};
-
-tabActualizaciones.onclick = () => mostrarPestana('actualizaciones');
-tabDiario.onclick = () => mostrarPestana('diario');
-
-btnDescargarStock.onclick = descargarStockCSV;
-
-// ... [Añadir el resto de Event Listeners y funciones de pago (setMetodoPago, etc.) aquí] ...

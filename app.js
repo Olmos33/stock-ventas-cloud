@@ -2,8 +2,16 @@
 
 import { socket, loadStateFromGlobal } from './state_manager.js';
 import { renderProductos } from './stock_view.js';
+import { mostrarPestanaPrincipal } from './sales_view.js';
+import { initDOM } from './init_dom.js'; 
 
-
+// --- INICIALIZACIÓN DEL DOM ---
+document.addEventListener('DOMContentLoaded', () => {
+    initDOM(); // <-- LLAMA A LA FUNCIÓN DESPUÉS DE CARGAR EL HTML
+    
+    // 1. Mostrar la pestaña de stock por defecto al cargar
+    mostrarPestanaPrincipal('stock'); 
+});
 // --- MANEJADORES DE SOCKET.IO ---
 socket.on('state:init', (initialState) => {
     console.log("Estado inicial recibido de la DB.");

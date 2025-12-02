@@ -2,26 +2,19 @@
 // Contiene la lógica CRUD (Crear, Leer, Editar, Eliminar) de los productos.
 
 // --- IMPORTACIONES DE ESTADO Y CORE ---
-import { estado, totalDinero, editingProduct, historyPointer, history, saveStateToHistory, saveStateAndBroadcast } from './state_manager.js';
-import { renderVentasDiarias, renderTotalDinero } from './sales_view.js';
+import { 
+    estado, totalDinero, editingProduct, saveStateToHistory, saveStateAndBroadcast 
+} from './state_manager.js';
+
+import { renderVentasDiarias, renderTotalDinero } from './sales_view.js'; // Necesario para actualizar otras vistas
 
 
-// --- REFERENCIAS DOM ---
-const modal = document.getElementById('modal');
-const modalTitle = document.getElementById('modalTitle');
-const nombreProductoInput = document.getElementById('nombreProducto');
-const tallaProductoInput = document.getElementById('tallaProducto');
-const cantidadInicialInput = document.getElementById('cantidadInicial');
-const precioProductoInput = document.getElementById('precioProducto');
-const btnGuardarProducto = document.getElementById('btnGuardarProducto');
-const btnEliminarProductoModal = document.getElementById('btnEliminarProductoModal');
-const formProducto = document.getElementById('formProducto');
-const productosDiv = document.getElementById('productos');
-
-
-// --- FUNCIONES DE VISTA DE STOCK (EXPORTADAS) ---
+// --- FUNCIÓN DE RENDERIZADO DE STOCK (EXPORTADA) ---
 
 export function renderProductos() {
+    // Referencias DOM (Se asume que estas variables son globales o están disponibles por ui_init.js)
+    const productosDiv = document.getElementById('productos');
+    
     productosDiv.innerHTML = '';
     // Iterar por los tipos de producto primero
     for (const tipo in estado) {
@@ -54,39 +47,60 @@ export function renderProductos() {
     }
 }
 
+
+// --- FUNCIONES CRUD (Crear, Editar, Eliminar) ---
+
 export function abrirModalProductoParaNuevo() {
-    modalTitle.textContent = 'Añadir Nuevo Producto';
-    nombreProductoInput.value = '';
-    tallaProductoInput.value = '';
-    cantidadInicialInput.value = '';
-    precioProductoInput.value = '';
-    btnGuardarProducto.textContent = 'Guardar Producto';
-    btnEliminarProductoModal.style.display = 'none'; // Ocultar botón eliminar
-    nombreProductoInput.disabled = false; // Habilitar edición de tipo y talla
-    tallaProductoInput.disabled = false;
-    editingProduct = null; // No estamos editando ningún producto
-    modal.style.display = 'block';
+    const modalTitle = document.getElementById('modalTitle');
+    const nombreProductoInput = document.getElementById('nombreProducto');
+    const tallaProductoInput = document.getElementById('tallaProducto');
+    const cantidadInicialInput = document.getElementById('cantidadInicial');
+    const precioProductoInput = document.getElementById('precioProducto');
+    const btnGuardarProducto = document.getElementById('btnGuardarProducto');
+    const btnEliminarProductoModal = document.getElementById('btnEliminarProductoModal');
+    const modal = document.getElementById('modal');
+
+    modalTitle.textContent = 'Añadir Nuevo Producto';
+    nombreProductoInput.value = '';
+    tallaProductoInput.value = '';
+    cantidadInicialInput.value = '';
+    precioProductoInput.value = '';
+    btnGuardarProducto.textContent = 'Guardar Producto';
+    btnEliminarProductoModal.style.display = 'none'; // Ocultar botón eliminar
+    nombreProductoInput.disabled = false; // Habilitar edición de tipo y talla
+    tallaProductoInput.disabled = false;
+    editingProduct = null; // No estamos editando ningún producto
+    modal.style.display = 'block';
 }
 
 export function editarProducto(tipo, talla) {
-    const datos = estado[tipo][talla];
-    if (!datos) return; // No se encontró el producto
+    const modalTitle = document.getElementById('modalTitle');
+    const nombreProductoInput = document.getElementById('nombreProducto');
+    const tallaProductoInput = document.getElementById('tallaProducto');
+    const cantidadInicialInput = document.getElementById('cantidadInicial');
+    const precioProductoInput = document.getElementById('precioProducto');
+    const btnGuardarProducto = document.getElementById('btnGuardarProducto');
+    const btnEliminarProductoModal = document.getElementById('btnEliminarProductoModal');
+    const modal = document.getElementById('modal');
 
-    modalTitle.textContent = `Editar Producto: ${tipo} (${talla})`;
-    nombreProductoInput.value = tipo;
-    tallaProductoInput.value = talla;
-    cantidadInicialInput.value = datos.inicial;
-    precioProductoInput.value = datos.precio;
+    const datos = estado[tipo][talla];
+    if (!datos) return; // No se encontró el producto
 
-    btnGuardarProducto.textContent = 'Actualizar Producto';
-    btnEliminarProductoModal.style.display = 'block'; // Mostrar botón eliminar
-    nombreProductoInput.disabled = true; // Deshabilitar edición de tipo y talla durante la edición
-    tallaProductoInput.disabled = true;
-    
-    // Almacenar el producto que se está editando
-    editingProduct = { tipo: tipo, talla: talla };
+    modalTitle.textContent = `Editar Producto: ${tipo} (${talla})`;
+    nombreProductoInput.value = tipo;
+    tallaProductoInput.value = talla;
+    cantidadInicialInput.value = datos.inicial;
+    precioProductoInput.value = datos.precio;
 
-    modal.style.display = 'block';
+    btnGuardarProducto.textContent = 'Actualizar Producto';
+    btnEliminarProductoModal.style.display = 'block'; // Mostrar botón eliminar
+    nombreProductoInput.disabled = true; // Deshabilitar edición de tipo y talla durante la edición
+    tallaProductoInput.disabled = true;
+    
+    // Almacenar el producto que se está editando (editingProduct se importa como let)
+    editingProduct = { tipo: tipo, talla: talla }; 
+
+    modal.style.display = 'block';
 }
 
 export function eliminarProducto(tipo, talla) {
@@ -99,11 +113,10 @@ export function eliminarProducto(tipo, talla) {
             delete estado[tipo];
         }
         
-        // La limpieza de ventasTemporales está en state_manager, pero la lógica de eliminación debe estar aquí.
-        // Como ventasTemporales está en state_manager, necesitas un mecanismo para limpiarlo, o asumimos que se limpia en sales_view.
+        // Asume que la limpieza de ventasTemporales se hace en el core
         
         saveStateToHistory(); 
-        saveStateAndBroadcast(); // Usa la nueva función guardar (socket.emit)
+        saveStateAndBroadcast(); // Notifica a otros clientes y a la DB
         renderProductos();
         renderVentasDiarias(); 
         renderTotalDinero();
@@ -111,44 +124,53 @@ export function eliminarProducto(tipo, talla) {
 }
 
 
-// --- EVENT LISTENER DE ENVÍO DEL FORMULARIO ---
+// --- LÓGICA DE ENVÍO DEL FORMULARIO (handleFormSubmit) ---
 
-formProducto.onsubmit = (e) => {
-  e.preventDefault();
-  const tipo = nombreProductoInput.value.trim();
-  const talla = tallaProductoInput.value.trim();
-  const cantidad = parseInt(cantidadInicialInput.value);
-  const precio = parseFloat(precioProductoInput.value);
+export function handleFormSubmit(e) {
+    e.preventDefault();
+    
+    // Referencias DOM necesarias para la lógica
+    const formProducto = document.getElementById('formProducto');
+    const nombreProductoInput = document.getElementById('nombreProducto');
+    const tallaProductoInput = document.getElementById('tallaProducto');
+    const cantidadInicialInput = document.getElementById('cantidadInicial');
+    const precioProductoInput = document.getElementById('precioProducto');
+    const modal = document.getElementById('modal');
+    
+    const tipo = nombreProductoInput.value.trim();
+    const talla = tallaProductoInput.value.trim();
+    const cantidad = parseInt(cantidadInicialInput.value);
+    const precio = parseFloat(precioProductoInput.value);
 
-  if (editingProduct) {
-    // Estamos en modo edición
-    const oldTipo = editingProduct.tipo;
-    const oldTalla = editingProduct.talla;
+    if (editingProduct) {
+        // Estamos en modo edición
+        const oldTipo = editingProduct.tipo;
+        const oldTalla = editingProduct.talla;
 
-    // Actualizar los datos del producto existente
-    if (estado[oldTipo]?.[oldTalla]) {
-        estado[oldTipo][oldTalla].inicial = cantidad;
-        estado[oldTipo][oldTalla].precio = precio;
-        // Recalcular stock basado en la nueva inicial y los vendidos/regalados
-        estado[oldTipo][oldTalla].stock = cantidad - estado[oldTipo][oldTalla].vendidos - estado[oldTipo][oldTalla].regalados;
-    }
-    editingProduct = null; // Resetear la variable de edición
-  } else {
-    // Estamos añadiendo un nuevo producto
-    if (!estado[tipo]) estado[tipo] = {};
-    if (estado[tipo]?.[talla]) {
-        // Esto debería ser manejado por la confirmación al añadir producto, pero lo mantenemos para seguridad
-        if (!confirm(`El producto "${tipo}" en talla "${talla}" ya existe. ¿Deseas actualizar la cantidad inicial a ${cantidad} y el precio a ${precio.toFixed(2)}€?`)) {
-            return;
-        }
-    }
-    estado[tipo][talla] = { inicial: cantidad, vendidos: 0, regalados: 0, stock: cantidad, precio: precio };
-  }
+        // Actualizar los datos del producto existente
+        if (estado[oldTipo]?.[oldTalla]) {
+            estado[oldTipo][oldTalla].inicial = cantidad;
+            estado[oldTipo][oldTalla].precio = precio;
+            // Recalcular stock basado en la nueva inicial y los vendidos/regalados
+            estado[oldTipo][oldTalla].stock = cantidad - estado[oldTipo][oldTalla].vendidos - estado[oldTipo][oldTalla].regalados;
+        }
+        // editingProduct se resetea en el Event Listener de ui_init.js si se hace el submit
+    } else {
+        // Estamos añadiendo un nuevo producto
+        if (!estado[tipo]) estado[tipo] = {};
+        if (estado[tipo]?.[talla]) {
+            if (!confirm(`El producto "${tipo}" en talla "${talla}" ya existe. ¿Deseas actualizar la cantidad inicial a ${cantidad} y el precio a ${precio.toFixed(2)}€?`)) {
+                return;
+            }
+        }
+        estado[tipo][talla] = { inicial: cantidad, vendidos: 0, regalados: 0, stock: cantidad, precio: precio };
+    }
 
-  modal.style.display = 'none';
-  saveStateToHistory();
-  saveStateAndBroadcast();
-  renderProductos();
-  renderVentasDiarias(); // Para mantener la vista de ventas actualizada si se añade/edita un producto
-  formProducto.reset();
-};
+    modal.style.display = 'none';
+    saveStateToHistory();
+    saveStateAndBroadcast();
+    renderProductos();
+    renderVentasDiarias(); 
+    renderTotalDinero();
+    formProducto.reset();
+}
