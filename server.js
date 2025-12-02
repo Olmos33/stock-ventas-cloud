@@ -5,7 +5,6 @@ const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
 const path = require('path');
-const os = require('os');
 const db = require('./db'); // [CRÍTICO] Módulo de conexión a PostgreSQL
 
 // --- CONFIGURACIÓN INICIAL ---
@@ -299,19 +298,15 @@ app.get('/', (req, res) => {
 // --- INICIAR SERVIDOR ---
 
 async function startServer() {
-    // Carga inicial del estado para asegurar que el servidor tiene la última versión al arrancar
     appStates = await loadGlobalState();
 
-    server.listen(PORT, '0.0.0.0', () => {
-        const localIp = os.networkInterfaces().eth0?.find(iface => iface.family === 'IPv4')?.address || 'localhost';
+    server.listen(PORT, () => { // Eliminamos '0.0.0.0'
         
         console.log(`\n======================================================`);
         console.log(`✅ SERVIDOR MULTI-TIENDA CLOUD ACTIVADO`);
         console.log(`🔑 Contraseña Admin: ${ADMIN_PASSWORD}`);
-        console.log(`\n🌐 Acceso Local: http://localhost:${PORT}`);
-        console.log(`🌐 Acceso Red/Cloud: Utiliza la URL que te dio Railway.`);
+        console.log(`\n🌐 URL de la Aplicación: <GENERADA POR RAILWAY>`);
         console.log(`======================================================`);
     });
 }
-
 startServer();
