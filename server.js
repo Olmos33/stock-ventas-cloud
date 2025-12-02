@@ -36,7 +36,7 @@ const socketToStoreMap = new Map();
 async function loadGlobalState() {
     try {
         // 1. Intentar cargar el estado de todas las tiendas (incluido el ARCHIVO_CENTRAL)
-        // Asume una tabla 'store_states' con columnas 'id' (TEXT) y 'state_data' (JSONB)
+        // Asume una tabla 'config' con columnas 'id' (TEXT) y 'state_data' (JSONB)
         const res = await db.query("SELECT data FROM config WHERE id = 1");
 
         if (res.rows.length === 0) {
@@ -55,11 +55,7 @@ async function loadGlobalState() {
 
             // 2. Guardar el estado inicial en la DB para la próxima vez
             const centralData = initialState[ARCHIVO_CENTRAL_ID];
-            await db.query(
-                'INSERT INTO config(id, state_data) VALUES($1, $2)',
-                [ARCHIVO_CENTRAL_ID, centralData]
-            );
-
+            await db.query('INSERT INTO config(id, data) VALUES(1, $1)', [centralData]);
             return initialState;
         }
 

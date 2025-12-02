@@ -375,12 +375,6 @@ export function mostrarPestana(pestana) {
   }
 }
 
-export function setMetodoPago(metodo) {
-    metodoPagoActivo = metodo;
-    // localStorage.setItem('metodoPagoActivo', metodo); // ELIMINADO: No se usa localStorage
-    updatePaymentMethodButtons(); // Actualizar clases CSS
-}
-
 export function descargarStockCSV() {
     let csvContent = "data:text/csv;charset=utf-8,";
     csvContent += "Tipo de Producto,Talla,Cantidad Inicial,Cantidad Vendida,Cantidad Regalada,Stock Actual,Precio Unitario (€)\n";
@@ -419,6 +413,18 @@ export function descargarStockCSV() {
     link.click();
     document.body.removeChild(link); 
 }
+
+// Función para setear el método de pago (necesaria para los Event Listeners de btnEfectivo/btnTarjeta)
+export function setMetodoPago(metodo) {
+    metodoPagoActivo = metodo;
+    updatePaymentMethodButtons();
+}
+
+// Función para guardar (es un alias de saveStateAndBroadcast que se usa en el código viejo)
+function guardar() {
+    saveStateAndBroadcast();
+}
+
 // --- EVENT LISTENERS (Se ejecutan al cargar el módulo) ---
 
 btnActualizar.onclick = () => {
